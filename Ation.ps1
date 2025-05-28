@@ -1,7 +1,8 @@
 ﻿# List of IP addresses or computer names for your VPS instances
 # MAKE SURE TO REPLACE THE EXAMPLE IP ADDRESSES BELOW WITH THE ACTUAL IP ADDRESSES OF YOUR 10 VPS INSTANCES
 $vpsList = @(
-    "103.253.21.231" # Example: if you only have 1 VPS, keep it like this
+    "103.253.21.231",
+    "103.253.21.158"# Example: if you only have 1 VPS, keep it like this
     # "IP_Of_VPS_2",  # If you have more VPS, add them here
     # "IP_Of_VPS_3",
     # ... up to 10 VPS

@@ -4,11 +4,7 @@
 # Moi IP/ten may tinh la mot chuoi rieng biet trong mang
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH SAU DAY BANG CUA BAN
 $vps_targets = @(
-    "192.168.1.101", # VM Windows 10 - Vi du 1
-    "192.168.1.102", # VM Windows 10 - Vi du 2
-    "WinServer2022_VM_01", # VM Windows Server 2022 - Vi du 3
-    "192.168.1.103" # VM Windows 10 - Vi du 4
-    # Them cac dia chi IP hoac ten may tinh cua ban vao day
+    "103.253.21.231"
 )
 
 # Kiem tra xem danh sach co trong khong

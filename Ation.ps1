@@ -1,78 +1,109 @@
-﻿# List of IP addresses or computer names for your VPS instances
-# MAKE SURE TO REPLACE THE EXAMPLE IP ADDRESSES BELOW WITH THE ACTUAL IP ADDRESSES OF YOUR 10 VPS INSTANCES
+# Cấu hình Proxmox API
+# ĐẢM BẢO THAY THẾ CÁC GIÁ TRỊ SAU BẰNG THÔNG TIN CỦA BẠN
+# Tạo một HashTable để ánh xạ IP của VPS với cấu hình Proxmox tương ứng
+$ProxmoxConfig = @{
+    "103.253.21.231" = @{VmId = 224; Node = "pve02"; Host = "103.214.9.48"} # THAY THẾ: VmId, Node, Host (IP Proxmox của bạn)
+    
+    # Nếu bạn có nhiều VPS, hãy thêm chúng vào đây theo định dạng tương tự:
+    # "IP_CỦA_VPS_CỦA_BẠN" = @{VmId = ID_VM_TRÊN_PROXMOX; Node = "TÊN_NODE_PROXMOX"; Host = "IP_HOẶC_TEN_MIEN_PROXMOX_CỦA_BẠN"}
+}
+
+# Điền thông tin API Token bạn đã tạo trên Proxmox VE
+# API Token ID sẽ có dạng: tên_người_dùng_API@realm!token_id (ví dụ: api_user_vps_control@pam!vps_control_token)
+$ApiTokenId = "Tung-cloud@pve!vps_control_token" # <-- THAY THẾ BẰNG TOKEN ID ĐẦY ĐỦ CỦA BẠN TỪ BƯỚC TRƯỚC
+
+# CẢNH BÁO AN TOÀN: LƯU TRỮ API TOKEN SECRET
+# TUYỆT ĐỐI KHÔNG ĐỂ SECRET TRỰC TIẾP TRONG MỘT KHO LƯU TRỮ CÔNG KHAI!
+# Nếu kho lưu trữ GitHub của bạn là PRIVATE, việc để Secret ở đây có rủi ro thấp hơn nhưng vẫn không phải là tốt nhất.
+# Nếu bạn lo lắng về bảo mật, hãy cân nhắc các phương pháp khác như:
+# 1. Yêu cầu nhập khi chạy script:
+# $ApiTokenSecret = Read-Host -Prompt "Nhập Proxmox API Token Secret của bạn" -AsSecureString | ConvertFrom-SecureString
+# 2. Đọc từ file cục bộ được bảo vệ (và thêm file đó vào .gitignore để không đẩy lên GitHub):
+# $ApiTokenSecret = Get-Content -Path "C:\path\to\your\proxmox_api_secret.txt" -AsSecureString | ConvertFrom-SecureString
+# 3. Sử dụng biến môi trường (Windows):
+# $ApiTokenSecret = $env:PROXMOX_API_SECRET # Cần set biến này trước khi chạy script
+#
+# Hiện tại, bạn có thể dán Secret trực tiếp vào đây nếu repo của bạn là PRIVATE và bạn chấp nhận rủi ro:
+$ApiTokenSecret = "b689808c-6e25-4f23-8851-7522a6fe7c9b"    # <-- THAY THẾ BẰNG CHUỖI SECRET DÀI MÀ BẠN ĐÃ SAO CHÉP
+
+# Danh sách các địa chỉ IP hoặc tên máy tính của các VPS bạn muốn quản lý
+# Đảm bảo các IP ở đây khớp với các "key" trong $ProxmoxConfig
 $vpsList = @(
-    "103.253.21.231"# Example: if you only have 1 VPS, keep it like this
-    # "IP_Of_VPS_2",  # If you have more VPS, add them here
-    # "IP_Of_VPS_3",
-    # ... up to 10 VPS
+    "103.253.21.231"
+    # Thêm các IP VPS khác của bạn vào đây
 )
 
-# Ask the user what action they want to perform
+# Hỏi người dùng muốn thực hiện hành động gì
 Write-Host "----------------------------------------------------"
-Write-Host "  WINDOWS VPS MANAGEMENT SCRIPT"
+Write-Host "  SCRIPT QUẢN LÝ VPS WINDOWS (Tích hợp Proxmox)"
 Write-Host "----------------------------------------------------"
-Write-Host "Enter 'stop' to shut down the VPS instances."
-Write-Host "Enter 'start' to start SERVICES on the VPS instances."
-Write-Host "Nhập 'reboot' để khởi động lại các VPS (nếu chúng đang chạy)."
-Write-Host "Enter 'exit' to quit the script."
+Write-Host "Nhập 'stop' để DỪNG NGUỒN các VPS qua Proxmox (cắt điện)."
+Write-Host "Nhập 'start' để BẬT NGUỒN các VPS qua Proxmox."
+Write-Host "Nhập 'reboot' để KHỞI ĐỘNG LẠI các VPS qua Proxmox."
+Write-Host "Nhập 'exit' để thoát khỏi script."
 Write-Host "----------------------------------------------------"
 
-$action = Read-Host -Prompt "Your choice"
+$action = Read-Host -Prompt "Lựa chọn của bạn"
 
-switch ($action.ToLower()) { # Use .ToLower() for case-insensitive input
+switch ($action.ToLower()) {
     "stop" {
-        Write-Host "You have chosen to SHUT DOWN the VPS instances." -ForegroundColor Yellow
+        Write-Host "Bạn đã chọn DỪNG NGUỒN các VPS qua Proxmox." -ForegroundColor Yellow
         foreach ($vps in $vpsList) {
-            Write-Host "Sending shutdown command to VPS: ${vps}..." # Sử dụng ${}
-            try {
-                Invoke-Command -ComputerName ${vps} -ScriptBlock { Stop-Computer -Force -Confirm:$false } -ErrorAction Stop -Authentication Negotiate
-                Write-Host "Successfully sent shutdown command to VPS: ${vps}" -ForegroundColor Green
-            } catch {
-                Write-Host "Error shutting down VPS ${vps}: $($_.Exception.Message)" -ForegroundColor Red # Sử dụng ${} cho $vps
-                # break
+            $config = $ProxmoxConfig[$vps]
+            if ($config) {
+                Write-Host "Đang gửi lệnh TẮT NGUỒN cho VPS '$vps' (Proxmox ID: $($config.VmId)) trên Proxmox node '$($config.Node)'..." -ForegroundColor Yellow
+                try {
+                    Invoke-PveVmStop -Node $($config.Node) -VmId $($config.VmId) -PVEHost $($config.Host) -ApiTokenId ${ApiTokenId} -ApiTokenSecret ${ApiTokenSecret} -Confirm:$false -ErrorAction Stop
+                    Write-Host "Đã gửi lệnh TẮT NGUỒN thành công cho VPS '$vps' (Proxmox ID: $($config.VmId))." -ForegroundColor Green
+                } catch {
+                    Write-Host "Lỗi khi TẮT NGUỒN VPS '$vps' (Proxmox ID: $($config.VmId)): $($_.Exception.Message)" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Cấu hình Proxmox không tìm thấy cho VPS: ${vps}. Vui lòng kiểm tra \$ProxmoxConfig." -ForegroundColor Red
             }
         }
     }
-   "start" { # Logic đã cập nhật cho tùy chọn 'start' để giải thích giới hạn và hướng dẫn người dùng
-        Write-Host "Bạn đã chọn BẬT NGUỒN các VPS." -ForegroundColor Yellow
-        Write-Host "QUAN TRỌNG: Lệnh Invoke-Command của PowerShell KHÔNG THỂ bật nguồn một máy tính đã tắt hoàn toàn." -ForegroundColor Red
-        Write-Host "Điều này là do WinRM (dịch vụ quản lý từ xa) đã tắt khi VPS bị tắt." -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Để bật nguồn VPS từ trạng thái TẮT HOÀN TOÀN, bạn thường cần một trong các phương pháp sau:" -ForegroundColor Cyan
-        Write-Host "1.  Wake-on-LAN (WoL): Nếu đã cấu hình trên VPS và mạng của bạn." -ForegroundColor Cyan
-        Write-Host "2.  API/CLI của nền tảng ảo hóa: (ví dụ: Hyper-V, VMware, VirtualBox, Proxmox)." -ForegroundColor Cyan
-        Write-Host "3.  Bảng điều khiển/API của nhà cung cấp Cloud: (ví dụ: Azure, AWS, Google Cloud)." -ForegroundColor Cyan
-        Write-Host "4.  Truy cập vật lý để nhấn nút nguồn." -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "Vui lòng sử dụng phương pháp phù hợp dựa trên môi trường lưu trữ VPS của bạn." -ForegroundColor Yellow
-        Write-Host "Script này không thể thực hiện hành động bật nguồn trực tiếp cho một VPS đã tắt hoàn toàn." -ForegroundColor Yellow
-    }
-
-     "reboot" { # Tùy chọn khởi động lại máy tính (nếu nó đã và đang chạy)
-        Write-Host "Bạn đã chọn KHỞI ĐỘNG LẠI các VPS." -ForegroundColor Yellow
-        Write-Host "LƯU Ý QUAN TRỌNG: Lệnh này chỉ khởi động lại các máy tính đang chạy." -ForegroundColor Yellow
-        Write-Host "Nó KHÔNG THỂ bật nguồn một máy tính đã tắt hoàn toàn. Để làm điều đó, bạn cần Wake-on-LAN hoặc API của nền tảng ảo hóa của bạn." -ForegroundColor Yellow
-        Read-Host -Prompt "Nhấn Enter để tiếp tục (khởi động lại máy tính)..." | Out-Null # Dừng lại để người dùng đọc thông báo
-
+    "start" {
+        Write-Host "Bạn đã chọn BẬT NGUỒN các VPS qua Proxmox." -ForegroundColor Yellow
         foreach ($vps in $vpsList) {
-            Write-Host "Đang gửi lệnh khởi động lại cho VPS: ${vps}..."
-            try {
-                # Lệnh này sẽ khởi động lại toàn bộ hệ điều hành của VPS
-                Invoke-Command -ComputerName ${vps} -ScriptBlock { Restart-Computer -Force -Confirm:$false } -ErrorAction Stop -Authentication Negotiate
-                Write-Host "Đã gửi lệnh khởi động lại thành công cho VPS: ${vps}" -ForegroundColor Green
-            } catch {
-                Write-Host "Lỗi khi khởi động lại VPS ${vps}: $($_.Exception.Message)" -ForegroundColor Red
-                # Nếu bạn muốn dừng script ngay khi có lỗi, uncomment dòng dưới:
-                # break
+            $config = $ProxmoxConfig[$vps]
+            if ($config) {
+                Write-Host "Đang gửi lệnh BẬT NGUỒN cho VPS '$vps' (Proxmox ID: $($config.VmId)) trên Proxmox node '$($config.Node)'..." -ForegroundColor Yellow
+                try {
+                    Invoke-PveVmStart -Node $($config.Node) -VmId $($config.VmId) -PVEHost $($config.Host) -ApiTokenId ${ApiTokenId} -ApiTokenSecret ${ApiTokenSecret} -Confirm:$false -ErrorAction Stop
+                    Write-Host "Đã gửi lệnh BẬT NGUỒN thành công cho VPS '$vps' (Proxmox ID: $($config.VmId))." -ForegroundColor Green
+                } catch {
+                    Write-Host "Lỗi khi BẬT NGUỒN VPS '$vps' (Proxmox ID: $($config.VmId)): $($_.Exception.Message)" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Cấu hình Proxmox không tìm thấy cho VPS: ${vps}. Vui lòng kiểm tra \$ProxmoxConfig." -ForegroundColor Red
             }
         }
     }
-
+    "reboot" {
+        Write-Host "Bạn đã chọn KHỞI ĐỘNG LẠI các VPS qua Proxmox." -ForegroundColor Yellow
+        foreach ($vps in $vpsList) {
+            $config = $ProxmoxConfig[$vps]
+            if ($config) {
+                Write-Host "Đang gửi lệnh KHỞI ĐỘNG LẠI cho VPS '$vps' (Proxmox ID: $($config.VmId)) trên Proxmox node '$($config.Node)'..." -ForegroundColor Yellow
+                try {
+                    # Invoke-PveVmReset thực hiện "hard reset" (nhấn nút reset)
+                    # Invoke-PveVmShutdown thực hiện shutdown mềm (như tắt máy từ HĐH) - cần Qemu Guest Agent trên VM
+                    Invoke-PveVmReset -Node $($config.Node) -VmId $($config.VmId) -PVEHost $($config.Host) -ApiTokenId ${ApiTokenId} -ApiTokenSecret ${ApiTokenSecret} -Confirm:$false -ErrorAction Stop
+                    Write-Host "Đã gửi lệnh KHỞI ĐỘNG LẠI thành công cho VPS '$vps' (Proxmox ID: $($config.VmId))." -ForegroundColor Green
+                } catch {
+                    Write-Host "Lỗi khi KHỞI ĐỘNG LẠI VPS '$vps' (Proxmox ID: $($config.VmId)): $($_.Exception.Message)" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Cấu hình Proxmox không tìm thấy cho VPS: ${vps}. Vui lòng kiểm tra \$ProxmoxConfig." -ForegroundColor Red
+            }
+        }
+    }
     "exit" {
-        Write-Host "Exiting script. Goodbye!" -ForegroundColor Yellow
+        Write-Host "Thoát khỏi script. Tạm biệt!" -ForegroundColor Yellow
     }
     default {
-        Write-Host "Invalid choice. Please enter 'stop', 'start' or 'exit'." -ForegroundColor Red
+        Write-Host "Lựa chọn không hợp lệ. Vui lòng nhập 'stop', 'start', 'reboot' hoặc 'exit'." -ForegroundColor Red
     }
 }
 

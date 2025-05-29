@@ -1,21 +1,77 @@
-# --- BAT DAU NOI DUNG FILE shutdown-vps.ps1 ---
+# --- BAT DAU NOI DUNG FILE shutdown-vps.ps1 (Version Co Lua Chon Nhom) ---
 
-# Danh sach cac dia chi IP hoac ten may tinh cua cac VM can tat
-# Moi IP/ten may tinh la mot chuoi rieng biet trong mang
-# HAY THAY THE CAC DIA CHI IP/TEN MAY TINH SAU DAY BANG CUA BAN
-$vps_targets = @(
-    "103.253.21.231"
-)
+# Dinh nghia cac nhom VPS. Moi nhom la mot key trong hashtable.
+# Gia tri cua moi key la mot mang (array) chua cac dia chi IP hoac ten may tinh.
+# HAY THAY THE CAC DIA CHI IP/TEN MAY TINH TRONG CAC NHOM SAU DAY BANG CUA BAN
+$vps_groups = @{
+    "Nhom_Quan_Trong" = @(
+        "103.253.21.231",  # VPS quan trong cua ban
+        "192.168.1.10",    # Them cac IP/Hostname VPS quan trong khac
+        "Server_MySQL"
+    );
+    "Nhom_Phu_Tro" = @(
+        "192.168.1.20",    # VPS phu tro 1
+        "192.168.1.21"     # VPS phu tro 2
+    );
+    "Tat_Ca_VPS" = @(
+        "103.253.21.231",
+        "192.168.1.10",
+        "Server_MySQL",
+        "192.168.1.20",
+        "192.168.1.21"
+        # Dam bao tat ca cac IP/Hostname tu cac nhom khac duoc them vao day neu ban muon co lua chon tat ca
+    );
+    # Them cac nhom khac cua ban vao day theo cu phap "TenNhom" = @("IP1", "IP2", "Hostname3");
+    # Vi du:
+    # "Nhom_Dev" = @("Dev_VM_1", "Dev_VM_2");
+}
 
-# Kiem tra xem danh sach co trong khong
+# --- Lua chon nhom de tat ---
+Write-Host "****************************************" -ForegroundColor Yellow
+Write-Host "   Chon nhom VPS ban muon tat:   " -ForegroundColor Yellow
+Write-Host "****************************************" -ForegroundColor Yellow
+
+$groupNames = $vps_groups.Keys | Sort-Object # Sap xep ten nhom theo thu tu chu cai de de chon
+for ($i = 0; $i -lt $groupNames.Count; $i++) {
+    Write-Host "$($i + 1). $($groupNames[$i])"
+}
+Write-Host "0. Thoat"
+Write-Host ""
+
+$selectedGroupIndex = -1
+while ($selectedGroupIndex -lt 0 -or $selectedGroupIndex -gt $groupNames.Count) {
+    try {
+        $input = Read-Host "Nhap so tuong ung voi nhom ban muon tat (0 de thoat)"
+        $selectedGroupIndex = [int]$input
+    }
+    catch {
+        Write-Host "Lua chon khong hop le. Vui long nhap mot so." -ForegroundColor Red
+    }
+}
+
+if ($selectedGroupIndex -eq 0) {
+    Write-Host "Da huy qua trinh. Thoat script." -ForegroundColor Yellow
+    exit
+}
+
+$selectedGroupName = $groupNames[$selectedGroupIndex - 1]
+$vps_targets = $vps_groups.$selectedGroupName
+
+Write-Host ""
+Write-Host "Ban da chon nhom: '$selectedGroupName'." -ForegroundColor Green
+Write-Host "Danh sach cac VPS se bi tat:" -ForegroundColor Green
+$vps_targets | ForEach-Object { Write-Host " - $_" -ForegroundColor Green }
+Write-Host ""
+
+# Kiem tra xem danh sach co trong khong sau khi lua chon
 if ($vps_targets.Count -eq 0) {
-    Write-Host "Canh bao: Danh sach VPS trong. Khong co VPS nao de tat." -ForegroundColor Yellow
+    Write-Host "Canh bao: Nhom da chon khong co VPS nao. Khong co VPS nao de tat." -ForegroundColor Yellow
     exit
 }
 
 # Thong bao bat dau qua trinh
 Write-Host "****************************************" -ForegroundColor Yellow
-Write-Host "   Bat dau qua trinh tat cac VPS Windows   " -ForegroundColor Yellow
+Write-Host "   Bat dau qua trinh tat cac VPS Windows trong nhom '$selectedGroupName'   " -ForegroundColor Yellow
 Write-Host "****************************************" -ForegroundColor Yellow
 Write-Host ""
 
@@ -54,4 +110,4 @@ Write-Host "****************************************" -ForegroundColor Yellow
 Write-Host "   Qua trinh tat cac VPS da hoan tat.    " -ForegroundColor Yellow
 Write-Host "****************************************" -ForegroundColor Yellow
 
-# --- KET THUC NOI DUNG FILE shutdown-vps.ps1 ---
+# --- KET THUC NOI DUNG FILE shutdown-vps.ps1 (Version Co Lua Chon Nhom) ---

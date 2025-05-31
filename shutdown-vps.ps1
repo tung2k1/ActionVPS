@@ -12,7 +12,7 @@ $vps_groups = @{
     );
     "Tat_Ca_VPS" = @(
         "103.253.21.231",
-        "103.253.21.231"
+        "103.253.21.156"
         # Dam bao tat ca cac IP/Hostname tu cac nhom khac duoc them vao day neu ban muon co lua chon tat ca
     );
     # Them cac nhom khac cua ban vao day theo cu phap "TenNhom" = @("IP1", "IP2", "Hostname3");

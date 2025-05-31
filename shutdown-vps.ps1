@@ -6,8 +6,6 @@
 $vps_targets = @(
     "103.253.21.156",  # VPS Host
     "103.253.21.231",  # VPS Ky Thuat
-    "192.168.1.100",   # Them cac IP/Hostname VPS khac cua ban vao day
-    "MyServer01"       # Vi du ten may tinh
 )
 
 # Kiem tra xem danh sach co trong khong

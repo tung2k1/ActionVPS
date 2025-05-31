@@ -5,11 +5,11 @@
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH TRONG CAC NHOM SAU DAY BANG CUA BAN
 $vps_groups = @{
     "Nhom_Quan_Trong" = @(
-        "103.253.21.231"
+        "103.253.21.156"
    
     );
     "Nhom_Phu_Tro" = @(
-        "103.253.21.156"
+        "103.253.21.231"
    
     );
     "Tat_Ca_VPS" = @(

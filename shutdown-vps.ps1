@@ -4,11 +4,11 @@
 # Gia tri cua moi key la mot mang (array) chua cac dia chi IP hoac ten may tinh.
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH TRONG CAC NHOM SAU DAY BANG CUA BAN
 $vps_groups = @{
-    "Nhom_Quan_Trong" = @(
+    "VPS_HOST" = @(
         "103.253.21.156"
    
     );
-    "Nhom_Phu_Tro" = @(
+    "VPS_KYTHUAT" = @(
         "103.253.21.231"
    
     );

@@ -5,20 +5,14 @@
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH TRONG CAC NHOM SAU DAY BANG CUA BAN
 $vps_groups = @{
     "Nhom_Quan_Trong" = @(
-        "103.253.21.231",  # VPS quan trong cua ban
-        "192.168.1.10",    # Them cac IP/Hostname VPS quan trong khac
-        "Server_MySQL"
+        "103.253.21.231"
     );
     "Nhom_Phu_Tro" = @(
-        "192.168.1.20",    # VPS phu tro 1
-        "192.168.1.21"     # VPS phu tro 2
+        "103.253.21.156"    # VPS phu tro 2
     );
     "Tat_Ca_VPS" = @(
         "103.253.21.231",
-        "192.168.1.10",
-        "Server_MySQL",
-        "192.168.1.20",
-        "192.168.1.21"
+        "103.253.21.231"
         # Dam bao tat ca cac IP/Hostname tu cac nhom khac duoc them vao day neu ban muon co lua chon tat ca
     );
     # Them cac nhom khac cua ban vao day theo cu phap "TenNhom" = @("IP1", "IP2", "Hostname3");

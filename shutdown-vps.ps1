@@ -1,11 +1,12 @@
-# --- BAT DAU NOI DUNG FILE shutdown-vps.ps1 (Version Don Gian) ---
+# --- BAT DAU NOI DUNG FILE shutdown-vps.ps1 (Version Tu Dong Tat) ---
 
 # Danh sach cac dia chi IP hoac ten may tinh cua cac VM can tat
-# Moi IP/ten may tinh la mot chuoi rieng biet trong mang.
+# Script se tu dong tat tat ca cac VPS trong danh sach nay.
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH SAU DAY BANG CUA BAN.
 $vps_targets = @(
-    "103.253.21.156",  # VPS Host
-    "103.253.21.231"  # VPS Ky Thuat
+    "103.253.21.156",
+    "103.253.21.231"
+    # Them cac IP/Hostname VPS khac cua ban vao day neu can
 )
 
 # Kiem tra xem danh sach co trong khong
@@ -55,4 +56,4 @@ Write-Host "****************************************" -ForegroundColor Yellow
 Write-Host "   Qua trinh tat cac VPS da hoan tat.    " -ForegroundColor Yellow
 Write-Host "****************************************" -ForegroundColor Yellow
 
-# --- KET THUC NOI DUNG FILE shutdown-vps.ps1 (Version Don Gian) ---
+# --- KET THUC NOI DUNG FILE shutdown-vps.ps1 (Version Tu Dong Tat) ---

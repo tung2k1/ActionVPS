@@ -5,7 +5,7 @@
 # HAY THAY THE CAC DIA CHI IP/TEN MAY TINH SAU DAY BANG CUA BAN.
 $vps_targets = @(
     "103.253.21.156",
-    "103.253.21.231",
+    "103.253.21.231"
     # Them cac IP/Hostname VPS khac cua ban vao day neu can
 )
 

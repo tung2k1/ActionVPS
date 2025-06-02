@@ -6,7 +6,6 @@
 $vps_targets = @(
     "103.253.21.156",
     "103.253.21.231",
-    "103.253.21.49"
     # Them cac IP/Hostname VPS khac cua ban vao day neu can
 )
 
